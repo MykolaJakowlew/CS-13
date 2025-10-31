@@ -1,0 +1,73 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Todo List</h1>
+            <div>
+                <input id='search-input' class="input" type="text" placeholder="search todos" />
+                <div>
+                    <input 
+                        id="searchByWords"
+                        type="radio"
+                        name="search-settings"
+                        checked
+                    >
+                    <label>Search by words</label>
+                </div>
+                <div>
+                    <input id="searchByFullText"type="radio" name="search-settings">
+                    <label>Search by full text</label>
+                </div>
+                <div>
+                    <input id="disabledRegisterSearch" type="checkbox" name="search-settings">
+                    <label>Disable register search</label>
+                </div>
+            </div>
+        </header>
+
+        <div class="todos">
+            <!-- <div class="item">
+                <input type="checkbox">
+                <div class="title">Some text</div>
+                <div class="trash-icon">
+                    <img src="./trash.png" />
+                </div>
+            </div>
+            <div class="item">
+                <input type="checkbox">
+                <div class="title">Dolore deserunt labore nisi aute sit anim est voluptate officia nostrud.</div>
+
+                <div class="trash-icon">
+                    <img src="./trash.png" />
+                </div>
+            </div>
+            <div class="item">
+                <input type="checkbox">
+                <div class="title">Pariatur laborum quis ut velit culpa velit sit non. Incididunt ipsum nisi ipsum sunt
+                    incididunt dolor dolore sint est aute. Esse incididunt enim laborum enim cillum amet exercitation.
+                </div>
+
+                <div class="trash-icon">
+                    <img src="./trash.png" />
+                </div>
+            </div> -->
+        </div>
+
+        <div class="add">
+            <input class="input" type="text" placeholder="Add a new todo..." />
+            <br />
+            <div class="button">
+                add
+            </div>
+        </div>
+    </div>
+
+    <script src="./script.js"></script>
+</body>
+
+</html>
