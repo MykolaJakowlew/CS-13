@@ -1,0 +1,92 @@
+<style>
+    .limit {
+        font-size: 1.8em;
+        color: grey;
+    }
+
+    .anim {
+        width: 64px;
+        aspect-ratio: 1/1;
+        background-color: blue;
+        animation: anim 1s infinite;
+        border-radius: 50%;
+        margin: 50px;
+    }
+
+    @keyframes anim {
+
+        0%,
+        100% {
+            transform: scale(1.0);
+        }
+
+        40% {
+            transform: scale(1.2);
+        }
+
+        80% {
+            transform: scale(0.8);
+        }
+    }
+</style>
+<div>
+    <input type="number" min="1" placeholder="Number">
+    <button>generate</button>
+    <div class="limit">Limit: 1000</div>
+</div>
+Result: <span id="result"></span>
+
+<div>
+    <span id="clicker"></span>
+    <button id="click">click</button>
+</div>
+
+<div class="anim"></div>
+<script>
+
+    const input = document.querySelector('input')
+
+    // async function F() {}
+    // 1,1,2,3,5,8,13,21,34,55,....
+    // 1,2,3,4,5,6,7 ,8 ,9 ,10
+    // const fibo = (num) => {
+    //     if (num == 1 || num == 2) {
+    //         return 1
+    //     }
+    //     // console.log(`execute with num${num}`)
+
+    //     return (fibo(num - 1)) + (fibo(num - 2))
+    //     // return await (fibo(num - 1) + fibo(num - 2)) // error 
+    // }
+
+    const fibo = (num) => {
+        let result = 1;
+        if (num == 1 || num == 2) {
+            return result
+        }
+        let prev = result;
+        for (let i = 3; i <= num; i += 1) {
+            const current = result
+            result = current + prev;
+            prev = current
+        }
+
+        return result
+    }
+
+    const btn = document.querySelector('button')
+    btn.addEventListener('click', () => {
+        const number = parseInt(input.value, 10)
+
+        const result = fibo(number)
+
+        document.querySelector('#result').textContent = result
+    })
+
+    document.querySelector('#click')
+        .addEventListener('click', () => {
+            const value = +document.querySelector('#clicker').textContent
+            document.querySelector('#clicker').textContent = value + 1
+        })
+
+</script>
