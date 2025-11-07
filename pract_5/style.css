@@ -100,6 +100,9 @@ header .wrapper {
     align-items: center;
     font-size: 12px;
 }
+#cart-counter.hide {
+    display: none;
+}
 
 .items-container {
     width: 100%;
@@ -285,4 +288,8 @@ header .wrapper {
     border-radius: 15px;
     padding: 0 5px;
     cursor: pointer;
+}
+
+.item-add.disabled {
+    opacity: 0.5;
 }

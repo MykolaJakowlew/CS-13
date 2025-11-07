@@ -1,3 +1,17 @@
+const cart = []
+
+
+const addCart = (item) => {
+    const cartCounter = document.querySelector('#cart-counter')
+    cart.push(item);
+    cartCounter.classList.remove('hide')
+    if (cart.length > 9) {
+        cartCounter.textContent = "+9"
+    } else {
+        cartCounter.textContent = cart.length
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const response = await fetch('./electronic_items_dataset.json')
     const data = await response.json()
@@ -11,42 +25,195 @@ document.addEventListener('DOMContentLoaded', async () => {
     setCategoryValues(data)
     setExtraFunctions(data)
 
-    document.querySelector('#search-input')
-        .addEventListener('keyup', (event) => {
-            const text = event.target.value.trim().toLowerCase()
-            if (text.length == 0) {
-                document
-                    .querySelectorAll('.items > .hide')
-                    .forEach(el => el.classList.remove('hide'))
+    // const filterItems = (
+    //     searchText,
+    //     priceMin,
+    //     priceMax,
+    //     category,
+    //     rating,
+    //     extraFunction
+    // ) => {}
+
+    const filterItems = (params) => {
+        const {
+            searchText,
+            priceMin,
+            priceMax,
+            category,
+            rating,
+            extraFunctions
+        } = params;
+
+        data.forEach(el => {
+            const item = document.querySelector(`.item[item-id="${el.id}"]`);
+
+            if (searchText.length) {
+                const isTextInName = el.name.toLowerCase()
+                    .indexOf(searchText.toLowerCase()) !== -1
+                const isTextInShorDescription = el.shortDescription.toLowerCase()
+                    .indexOf(searchText.toLowerCase()) !== -1
+                if (!isTextInName && !isTextInShorDescription) {
+                    // el => add hide
+                    item.classList.add('hide');
+                    return;
+                }
+            }
+
+            // if (priceMin >= 0) {
+            //     if (el.price < priceMin) {
+            //         // el => add hide
+            //         item.classList.add('hide');
+            //         return;
+            //     }
+            // }
+
+            if (priceMin >= 0 && el.price < priceMin) {
+                // el => add hide
+                item.classList.add('hide');
                 return;
             }
 
-            const showedItems = data.filter(el => {
-                if (el.name.toLowerCase().indexOf(text) != -1) {
-                    return true
+            if (priceMax >= 0 && el.price > priceMax) {
+                // el => add hide
+                item.classList.add('hide');
+                return;
+            }
+
+            if (extraFunctions && extraFunctions.length) {
+                const result = extraFunctions
+                    .every(extra => el.extraFunctions.includes(extra))
+                if (!result) {
+                    // el => add hide
+                    item.classList.add('hide');
+                    return;
                 }
+            }
 
-                if (el.shortDescription.toLowerCase().indexOf(text) != -1) {
-                    return true
-                }
 
-                return false
-            })
-
-            const showedIds = showedItems.map(el => el.id)
-
-            const items = document.querySelectorAll('.item')
-
-            items.forEach(item => {
-                const id = item.getAttribute('item-id')
-                if (!showedIds.includes(id)) {
-                    item.classList.add('hide')
-                } else {
-                    item.classList.remove('hide')
-                }
-            })
-
+            item.classList.remove('hide');
         })
+    }
+
+    const searchInput = document.querySelector('#search-input')
+    const priceMinInput = document.querySelector('#price-min')
+    const priceMaxInput = document.querySelector('#price-max')
+
+    const getAllSelectedExtraFunctions = () => {
+        const selectedCheckbox = document.querySelectorAll(
+            '.extra-functions-container input[type="checkbox"]:checked'
+        )
+        const extraFunctions = []
+        selectedCheckbox.forEach(checkbox => {
+            extraFunctions.push(
+                checkbox.getAttribute('data')
+            )
+        })
+        return extraFunctions
+    }
+
+    searchInput.addEventListener('keyup', (event) => {
+        const text = event.target.value.trim().toLowerCase()
+        filterItems({
+            searchText: text,
+            priceMin: parseInt(priceMinInput.value),
+            priceMax: parseInt(priceMaxInput.value),
+            extraFunctions: getAllSelectedExtraFunctions()
+        })
+        // if (text.length == 0) {
+        //     document
+        //         .querySelectorAll('.items > .hide')
+        //         .forEach(el => el.classList.remove('hide'))
+        //     return;
+        // }
+
+        // const showedItems = data.filter(el => {
+        //     if (el.name.toLowerCase().indexOf(text) != -1) {
+        //         return true
+        //     }
+
+        //     if (el.shortDescription.toLowerCase().indexOf(text) != -1) {
+        //         return true
+        //     }
+
+        //     return false
+        // })
+
+        // const showedIds = showedItems.map(el => el.id)
+
+        // const items = document.querySelectorAll('.item')
+
+        // items.forEach(item => {
+        //     const id = item.getAttribute('item-id')
+        //     if (!showedIds.includes(id)) {
+        //         item.classList.add('hide')
+        //     } else {
+        //         item.classList.remove('hide')
+        //     }
+        // })
+
+    })
+
+    priceMinInput.addEventListener('keyup', (event) => {
+        filterItems({
+            searchText: searchInput.value.trim().toLowerCase(),
+            priceMin: parseInt(event.target.value),
+            priceMax: parseInt(priceMaxInput.value),
+            extraFunctions: getAllSelectedExtraFunctions()
+        })
+        // if (event.target.value.trim().length == 0) {
+        //     document.querySelectorAll('.item.hide')
+        //         .forEach(el => el.classList.remove('hide'))
+        // }
+        // const priceMin = parseInt(event.target.value)
+        // // isNaN => is not a number
+        // if (isNaN(priceMin)) {
+        //     return;
+        // }
+
+        // data.forEach(el => {
+        //     const item = document
+        //         .querySelector(`.item[item-id="${el.id}"]`)
+
+        //     if (el.price > priceMin) {
+        //         item.classList.remove('hide')
+        //     } else {
+        //         item.classList.add('hide')
+        //     }
+        // })
+    })
+
+    priceMaxInput.addEventListener('keyup', (event) => {
+        filterItems({
+            searchText: searchInput.value.trim().toLowerCase(),
+            priceMin: parseInt(priceMinInput.value),
+            priceMax: parseInt(event.target.value),
+            extraFunctions: getAllSelectedExtraFunctions()
+        })
+    })
+
+    document.querySelectorAll(
+        '.extra-functions-container input[type="checkbox"]'
+    ).forEach(checkboxInput => {
+        checkboxInput.addEventListener(
+            'change',
+            () => {
+                const extraFunctions = getAllSelectedExtraFunctions()
+
+                /*
+                 {
+                   [propertyName]: value
+                 }
+                */
+                filterItems({
+                    searchText: searchInput.value.trim(),
+                    priceMin: parseInt(priceMinInput.value),
+                    priceMax: parseInt(priceMaxInput.value),
+                    // extraFunctions: extraFunctions,
+                    extraFunctions,
+                })
+            }
+        )
+    })
 
     document.querySelector('.loader')
         .classList.add('hide')
@@ -120,6 +287,22 @@ function createItem(item) {
     const add = document.createElement('div')
     add.classList.add('item-add')
     add.textContent = `Add to cart`
+    add.addEventListener('click', () => {
+        // item.availableCount = item.availableCount - 1
+        // item.availableCount--;
+        if (item.availableCount == 0) {
+            return;
+        }
+
+        addCart(item)
+
+        item.availableCount -= 1
+        availableCount.textContent = `Count: ${item.availableCount}`
+
+        if (item.availableCount == 0) {
+            add.classList.add('disabled')
+        }
+    })
 
     bottom.append(rating)
     bottom.append(availableCount)
@@ -206,6 +389,7 @@ function setExtraFunctions(data) {
 
         const input = document.createElement('input')
         input.type = 'checkbox'
+        input.setAttribute('data', extra)
 
         label.appendChild(input)
         label.appendChild(span)
