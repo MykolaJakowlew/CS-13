@@ -1,250 +1,42 @@
 const cart = []
 
-
-const addCart = (item) => {
+const reRenderCartCount = () => {
     const cartCounter = document.querySelector('#cart-counter')
-    cart.push(item);
-    cartCounter.classList.remove('hide')
-    if (cart.length > 9) {
+    const totalCount = cart.reduce((acc, cur) => {
+        return acc + cur.count;
+    }, 0)
+    // cart => [{ count: 1 }, { count: 5 }, { count: 3 }]
+    //   I: (acc => 0, cur => { count: 1 }) => 0 + 1 => 1
+    //  II: (acc => 1, cur => { count: 5 }) => 1 + 5 => 6
+    // III: (acc => 6, cur => { count: 3 }) => 6 + 3 => 9
+    // result => 9
+
+    // let totalCount = 0
+    // for(const el of cart) {
+    //     totalCount += el.count
+    // }
+
+    if (totalCount > 9) {
         cartCounter.textContent = "+9"
     } else {
-        cartCounter.textContent = cart.length
+        cartCounter.textContent = totalCount
     }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    const response = await fetch('./electronic_items_dataset.json')
-    const data = await response.json()
-    const items = document.querySelector('.items')
-    data.forEach(el => {
-        const item = createItem(el)
-        // items.innerHTML += item
-        items.appendChild(item)
-    })
-
-    setCategoryValues(data)
-    setExtraFunctions(data)
-
-    // const filterItems = (
-    //     searchText,
-    //     priceMin,
-    //     priceMax,
-    //     category,
-    //     rating,
-    //     extraFunction
-    // ) => {}
-
-    const filterItems = (params) => {
-        const {
-            searchText,
-            priceMin,
-            priceMax,
-            category,
-            rating,
-            extraFunctions
-        } = params;
-
-        data.forEach(el => {
-            const item = document.querySelector(`.item[item-id="${el.id}"]`);
-
-            if (searchText.length) {
-                const isTextInName = el.name.toLowerCase()
-                    .indexOf(searchText.toLowerCase()) !== -1
-                const isTextInShorDescription = el.shortDescription.toLowerCase()
-                    .indexOf(searchText.toLowerCase()) !== -1
-                if (!isTextInName && !isTextInShorDescription) {
-                    // el => add hide
-                    item.classList.add('hide');
-                    return;
-                }
-            }
-
-            // if (priceMin >= 0) {
-            //     if (el.price < priceMin) {
-            //         // el => add hide
-            //         item.classList.add('hide');
-            //         return;
-            //     }
-            // }
-
-            if (priceMin >= 0 && el.price < priceMin) {
-                // el => add hide
-                item.classList.add('hide');
-                return;
-            }
-
-            if (priceMax >= 0 && el.price > priceMax) {
-                // el => add hide
-                item.classList.add('hide');
-                return;
-            }
-
-            if (extraFunctions && extraFunctions.length) {
-                const result = extraFunctions
-                    .every(extra => el.extraFunctions.includes(extra))
-                if (!result) {
-                    // el => add hide
-                    item.classList.add('hide');
-                    return;
-                }
-            }
-
-
-            item.classList.remove('hide');
-        })
+const addCart = (item) => {
+    const cartCounter = document.querySelector('#cart-counter')
+    const existedItem = cart.find(el => el.id === item.id)
+    if (existedItem) {
+        existedItem.count += 1
+    } else {
+        cart.push({ ...item, count: 1 });
     }
+    cartCounter.classList.remove('hide')
 
-    const searchInput = document.querySelector('#search-input')
-    const priceMinInput = document.querySelector('#price-min')
-    const priceMaxInput = document.querySelector('#price-max')
+    reRenderCartCount()
+}
 
-    const getAllSelectedExtraFunctions = () => {
-        const selectedCheckbox = document.querySelectorAll(
-            '.extra-functions-container input[type="checkbox"]:checked'
-        )
-        const extraFunctions = []
-        selectedCheckbox.forEach(checkbox => {
-            extraFunctions.push(
-                checkbox.getAttribute('data')
-            )
-        })
-        return extraFunctions
-    }
-
-    searchInput.addEventListener('keyup', (event) => {
-        const text = event.target.value.trim().toLowerCase()
-        filterItems({
-            searchText: text,
-            priceMin: parseInt(priceMinInput.value),
-            priceMax: parseInt(priceMaxInput.value),
-            extraFunctions: getAllSelectedExtraFunctions()
-        })
-        // if (text.length == 0) {
-        //     document
-        //         .querySelectorAll('.items > .hide')
-        //         .forEach(el => el.classList.remove('hide'))
-        //     return;
-        // }
-
-        // const showedItems = data.filter(el => {
-        //     if (el.name.toLowerCase().indexOf(text) != -1) {
-        //         return true
-        //     }
-
-        //     if (el.shortDescription.toLowerCase().indexOf(text) != -1) {
-        //         return true
-        //     }
-
-        //     return false
-        // })
-
-        // const showedIds = showedItems.map(el => el.id)
-
-        // const items = document.querySelectorAll('.item')
-
-        // items.forEach(item => {
-        //     const id = item.getAttribute('item-id')
-        //     if (!showedIds.includes(id)) {
-        //         item.classList.add('hide')
-        //     } else {
-        //         item.classList.remove('hide')
-        //     }
-        // })
-
-    })
-
-    priceMinInput.addEventListener('keyup', (event) => {
-        filterItems({
-            searchText: searchInput.value.trim().toLowerCase(),
-            priceMin: parseInt(event.target.value),
-            priceMax: parseInt(priceMaxInput.value),
-            extraFunctions: getAllSelectedExtraFunctions()
-        })
-        // if (event.target.value.trim().length == 0) {
-        //     document.querySelectorAll('.item.hide')
-        //         .forEach(el => el.classList.remove('hide'))
-        // }
-        // const priceMin = parseInt(event.target.value)
-        // // isNaN => is not a number
-        // if (isNaN(priceMin)) {
-        //     return;
-        // }
-
-        // data.forEach(el => {
-        //     const item = document
-        //         .querySelector(`.item[item-id="${el.id}"]`)
-
-        //     if (el.price > priceMin) {
-        //         item.classList.remove('hide')
-        //     } else {
-        //         item.classList.add('hide')
-        //     }
-        // })
-    })
-
-    priceMaxInput.addEventListener('keyup', (event) => {
-        filterItems({
-            searchText: searchInput.value.trim().toLowerCase(),
-            priceMin: parseInt(priceMinInput.value),
-            priceMax: parseInt(event.target.value),
-            extraFunctions: getAllSelectedExtraFunctions()
-        })
-    })
-
-    document.querySelectorAll(
-        '.extra-functions-container input[type="checkbox"]'
-    ).forEach(checkboxInput => {
-        checkboxInput.addEventListener(
-            'change',
-            () => {
-                const extraFunctions = getAllSelectedExtraFunctions()
-
-                /*
-                 {
-                   [propertyName]: value
-                 }
-                */
-                filterItems({
-                    searchText: searchInput.value.trim(),
-                    priceMin: parseInt(priceMinInput.value),
-                    priceMax: parseInt(priceMaxInput.value),
-                    // extraFunctions: extraFunctions,
-                    extraFunctions,
-                })
-            }
-        )
-    })
-
-    document.querySelector('.loader')
-        .classList.add('hide')
-})
-
-
-// function createItem(item) {
-//     return `
-//     <div class="item">
-//         <div class="item-image"
-//             style="--bgURL:url(${item.imageUrl})"></div>
-//         <div class="item-title">${item.name}</div>
-//         <div class="item-short-description">${item.shortDescription}</div>
-//         <div class="item-bottom">
-//             <div class="item-rating">
-//                 Rating: <span>${item.rating}</span>
-//             </div>
-//             <div class="item-available-count">
-//                 Count: <span>${item.availableCount}</span>
-//             </div>
-//             <div class="item-price">
-//                 ${item.price} ${item.currency}
-//             </div>
-//             <div class="item-add">
-//                 Add to cart
-//             </div>
-//         </div>
-//     </div>`
-// }
-
-function createItem(item) {
+const createItem = (item) => {
     //  <div class="item"></div>
     const div = document.createElement('div')
     div.classList.add('item');
@@ -288,6 +80,7 @@ function createItem(item) {
     add.classList.add('item-add')
     add.textContent = `Add to cart`
     add.addEventListener('click', () => {
+
         // item.availableCount = item.availableCount - 1
         // item.availableCount--;
         if (item.availableCount == 0) {
@@ -318,26 +111,26 @@ function createItem(item) {
     return div
 }
 
-function setCategoryValues(data) {
+const setCategoryValues = (data) => {
     // [ 'c1', 'c2', 'c3' ]
     // const allCategories = data.map(el => {
     //     if (allCategories.includes(el)) {
     //         return null;
     //     }
-
     //     return el.category
     // }).filter(el => el != null)
 
-    // [ 'c1', 'c2', 'c1', 'c3' ]
+    // allCategories => [ 'c1', 'c2', 'c1', 'c3' ]
     const allCategories = data.map(el => el.category)
 
-    // {
+    // allCategoriesSet => {
     //    c1: 1,
     //    c2: 1,
     //    c3: 1,
     //    ...
     // }
     const allCategoriesSet = new Set(allCategories)
+    // uniqueCategories => [ 'c1', 'c2', 'c3' ]
     const uniqueCategories = [...allCategoriesSet]
 
     const categoryNode = document.querySelector('.category select')
@@ -351,7 +144,7 @@ function setCategoryValues(data) {
     })
 }
 
-function setExtraFunctions(data) {
+const setExtraFunctions = (data) => {
 
     // [
     //   ['f1', 'f2', 'f3', ...],
@@ -376,9 +169,7 @@ function setExtraFunctions(data) {
     //   ...
     // ]
     const allExtraFunctions = data.flatMap(el => el.extraFunctions)
-    const uniqueExtraFunctions = [
-        ...new Set(allExtraFunctions)
-    ]
+    const uniqueExtraFunctions = [...new Set(allExtraFunctions)]
 
     const container = document.querySelector('.extra-functions-container')
 
@@ -397,3 +188,266 @@ function setExtraFunctions(data) {
         container.appendChild(label)
     })
 }
+
+const getAllSelectedExtraFunctions = () => {
+    const selectedCheckbox = document.querySelectorAll(
+        '.extra-functions-container input[type="checkbox"]:checked'
+    )
+    const extraFunctions = []
+    selectedCheckbox.forEach(checkbox => {
+        extraFunctions.push(
+            checkbox.getAttribute('data')
+        )
+    })
+    return extraFunctions
+}
+
+const filterItems = (data, params) => {
+    const {
+        searchText,
+        priceMin,
+        priceMax,
+        category,
+        rating,
+        extraFunctions
+    } = params;
+
+    data.forEach(el => {
+        const item = document.querySelector(`.item[item-id="${el.id}"]`);
+
+        if (searchText.length) {
+            const isTextInName = el.name.toLowerCase()
+                .indexOf(searchText.toLowerCase()) !== -1
+            const isTextInShorDescription = el.shortDescription.toLowerCase()
+                .indexOf(searchText.toLowerCase()) !== -1
+            if (!isTextInName && !isTextInShorDescription) {
+                // el => add hide
+                item.classList.add('hide');
+                return;
+            }
+        }
+
+        // if (priceMin >= 0) {
+        //     if (el.price < priceMin) {
+        //         // el => add hide
+        //         item.classList.add('hide');
+        //         return;
+        //     }
+        // }
+
+        if (priceMin >= 0 && el.price < priceMin) {
+            // el => add hide
+            item.classList.add('hide');
+            return;
+        }
+
+        if (priceMax >= 0 && el.price > priceMax) {
+            // el => add hide
+            item.classList.add('hide');
+            return;
+        }
+
+        if (extraFunctions && extraFunctions.length) {
+            const result = extraFunctions
+                .every(extra => el.extraFunctions.includes(extra))
+            if (!result) {
+                // el => add hide
+                item.classList.add('hide');
+                return;
+            }
+        }
+
+
+        item.classList.remove('hide');
+    })
+}
+
+const setupFilters = (data) => {
+    const searchInput = document.querySelector('#search-input')
+    const priceMinInput = document.querySelector('#price-min')
+    const priceMaxInput = document.querySelector('#price-max')
+
+    searchInput.addEventListener('keyup', (event) => {
+        const text = event.target.value.trim().toLowerCase()
+        filterItems(data, {
+            searchText: text,
+            priceMin: parseInt(priceMinInput.value),
+            priceMax: parseInt(priceMaxInput.value),
+            extraFunctions: getAllSelectedExtraFunctions()
+        })
+
+    })
+
+    priceMinInput.addEventListener('keyup', (event) => {
+        filterItems(data, {
+            searchText: searchInput.value.trim().toLowerCase(),
+            priceMin: parseInt(event.target.value),
+            priceMax: parseInt(priceMaxInput.value),
+            extraFunctions: getAllSelectedExtraFunctions()
+        })
+    })
+
+    priceMaxInput.addEventListener('keyup', (event) => {
+        filterItems(data, {
+            searchText: searchInput.value.trim().toLowerCase(),
+            priceMin: parseInt(priceMinInput.value),
+            priceMax: parseInt(event.target.value),
+            extraFunctions: getAllSelectedExtraFunctions()
+        })
+    })
+
+    document.querySelectorAll(
+        '.extra-functions-container input[type="checkbox"]'
+    ).forEach(checkboxInput => {
+        checkboxInput.addEventListener(
+            'change',
+            () => {
+                const extraFunctions = getAllSelectedExtraFunctions()
+                filterItems(data, {
+                    searchText: searchInput.value.trim(),
+                    priceMin: parseInt(priceMinInput.value),
+                    priceMax: parseInt(priceMaxInput.value),
+                    extraFunctions,
+                })
+            }
+        )
+    })
+}
+
+const createViewItem = (item, data) => {
+    const cartViewItem = document.createElement('div')
+    cartViewItem.classList.add('cart-view-item')
+
+    const cartViewItemImage = document.createElement('div')
+    cartViewItemImage.classList.add('image')
+    cartViewItemImage.style = `--bgImg: url('${item.imageUrl}')`
+
+    const cartViewItemName = document.createElement('div')
+    cartViewItemName.classList.add('name')
+    cartViewItemName.textContent = item.name
+
+    const cartViewItemPrice = document.createElement('div')
+    cartViewItemPrice.classList.add('price')
+    cartViewItemPrice.textContent = item.price
+
+    const itemCount = item.count
+    const cartViewItemCount = document.createElement('div')
+    cartViewItemCount.classList.add('count')
+    const cartViewItemCountDec = document.createElement('div')
+    cartViewItemCountDec.classList.add('decrease-count')
+    cartViewItemCountDec.textContent = "-"
+    const cartViewItemCountValue = document.createElement('div')
+    cartViewItemCountValue.classList.add('count-value')
+    cartViewItemCountValue.textContent = itemCount
+    const cartViewItemCountInc = document.createElement('div')
+    cartViewItemCountInc.classList.add('increase-count')
+    cartViewItemCountInc.textContent = "+"
+    cartViewItemCount.append(
+        cartViewItemCountDec,
+        cartViewItemCountValue,
+        cartViewItemCountInc
+    )
+
+    const cartViewItemTotalItemPrice = document.createElement('div')
+    cartViewItemTotalItemPrice.classList.add("total-item-price")
+    cartViewItemTotalItemPrice.textContent = (itemCount * item.price).toFixed(2)
+
+    const cartViewItemRemoveItem = document.createElement('div')
+    cartViewItemRemoveItem.classList.add('remove-item')
+    const cartViewItemRemoveItemImg = document.createElement('img')
+    cartViewItemRemoveItemImg.src = "./imgs/delete.png"
+    cartViewItemRemoveItemImg.addEventListener('click', () => {
+        cartViewItem.remove();
+        const removedElemIndex = cart.findIndex(el => el.id === item.id)
+        cart.splice(removedElemIndex, 1)
+        reRenderCartCount()
+        setTotalPrice()
+        const oldElem = data.find(el => el.id === item.id)
+        oldElem.availableCount += item.count
+
+        document.querySelector(
+            `.item[item-id="${item.id}"] .item-available-count`
+        ).textContent = `Count: ${oldElem.availableCount}`
+    })
+
+    cartViewItemRemoveItem.appendChild(cartViewItemRemoveItemImg)
+
+    cartViewItem.append(
+        cartViewItemImage,
+        cartViewItemName,
+        cartViewItemPrice,
+        cartViewItemCount,
+        cartViewItemTotalItemPrice,
+        cartViewItemRemoveItem,
+    )
+    return cartViewItem
+}
+
+// get unique id
+const uniqueId = crypto.randomUUID()
+const randonvalue = Math.random()
+
+const setTotalPrice = () => {
+    // cart => [{ price: 20, count: 2},{ price: 50, count: 4}, ... ]
+    const totalPrice = cart.reduce((acc, cur) => {
+        return acc + (cur.price * cur.count)
+    }, 0)
+    //   I: (acc: 0, cur:{ price: 20, count: 2}) => 0 + (20 * 2) => 40
+    //  II: (acc: 40, cur:{ price: 50, count: 4}) => 40 + (50 * 4) => 240
+    //  ...
+    document.querySelector('#total-price-value')
+        .textContent = totalPrice.toFixed(2)
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+    const response = await fetch('./electronic_items_dataset.json')
+    const data = await response.json()
+    const items = document.querySelector('.items')
+    data.forEach(el => {
+        const div = createItem(el)
+        items.appendChild(div)
+    })
+
+    setCategoryValues(data)
+    setExtraFunctions(data)
+
+    setupFilters(data)
+
+    const cartViewList = document.querySelector('.cart-view-list')
+    const cartViewWrapper = document.querySelector('.cart-view-wrapper')
+
+    const closeCartView = () => {
+        cartViewWrapper.classList.add('hide')
+    }
+    const openCartView = () => {
+        cartViewList.innerHTML = ''
+        cart.forEach(cartItem => {
+            const itemNoda = createViewItem(cartItem, data)
+            cartViewList.appendChild(itemNoda)
+        })
+        setTotalPrice();
+        cartViewWrapper.classList.remove('hide')
+    }
+
+    document.querySelector('.blur')
+        .addEventListener('click', () => {
+            closeCartView()
+        })
+
+    document.querySelector('#cart-view-close')
+        .addEventListener('click', () => {
+            closeCartView()
+        })
+
+    document.querySelector('.cart>div')
+        .addEventListener('click', () => {
+            openCartView()
+        })
+
+
+    // setTimeout(() => {
+    document.querySelector('.loader')
+        .classList.add('hide')
+    // }, 2500)
+})
